@@ -28,6 +28,7 @@
   
 </head>
 <body class="antialiased bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
+
   <div class="min-h-screen p-6 max-w-6xl mx-auto">
     <!-- Header -->
     <header class="flex items-center justify-between gap-4 mb-6">
@@ -406,6 +407,12 @@ const translations = {
   // Form submit with localized alerts
   txForm.addEventListener('submit', (e) => {
     e.preventDefault();
+	// 🔒 Stop if user not logged in
+if (!auth.currentUser) {
+  showLoginPopup();
+  return;
+}
+
 
     const incomeAmount = parseFloat(document.getElementById('txIncome').value) || 0;
     const expenseAmount = parseFloat(document.getElementById('txExpense').value) || 0;
@@ -613,6 +620,11 @@ function saveCategories() {
 
 addCategoryForm.addEventListener('submit', (e) => {
   e.preventDefault();
+  if (!auth.currentUser) {
+  showLoginPopup();
+  return;
+}
+
   const name = document.getElementById('catName').value.trim();
   const amount = parseFloat(document.getElementById('catAmount').value) || 0;
   if (!name || amount <= 0) return alert('Enter valid category and amount');
@@ -702,6 +714,11 @@ function saveGoals() {
 if (addGoalForm) {
   addGoalForm.addEventListener('submit', (e) => {
     e.preventDefault();
+	if (!auth.currentUser) {
+  showLoginPopup();
+  return;
+}
+
     const name = document.getElementById('newGoalName').value.trim();
     const amount = parseFloat(document.getElementById('newGoalAmount').value) || 0;
     if (!name || amount <= 0) return alert('Enter valid goal name and amount');
@@ -749,13 +766,13 @@ render = function() {
 };
 
 
-</script><script type="module">
-  // ✅ Import Firebase SDKs
+</script>
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
+    from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-  // ✅ Your Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyBj5JC2OUp2QVswlTDEkpBXCDPcywXZdxk",
     authDomain: "budget-and-savings-tracker.firebaseapp.com",
@@ -766,36 +783,105 @@ render = function() {
     measurementId: "G-N8DL03R0H1"
   };
 
-  // ✅ Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
-  const auth = getAuth(app);
+  window.auth = getAuth(app); // make it global
   const provider = new GoogleAuthProvider();
 
-  // ✅ Reference your sidebar button
-  const loginBtn = document.getElementById("signupBtn");
+  const sidebarLoginBtn = document.getElementById("signupBtn");
 
-  // ✅ Listen for auth state changes (user login/logout)
+  // 🔁 Auth state: just update the sidebar button
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      loginBtn.textContent = `Sign out (${user.displayName || user.email})`;
-      loginBtn.onclick = async () => {
+      sidebarLoginBtn.textContent = `Sign out (${user.displayName || user.email})`;
+      sidebarLoginBtn.onclick = async () => {
         await signOut(auth);
-        console.log("Signed out");
+        sidebarLoginBtn.textContent = "Sign in with Google";
+        localStorage.clear();
       };
-      console.log("Signed in as:", user);
     } else {
-      loginBtn.textContent = "Sign in with Google";
-      loginBtn.onclick = async () => {
+      sidebarLoginBtn.textContent = "Sign in with Google";
+      sidebarLoginBtn.onclick = async () => {
         try {
           await signInWithPopup(auth, provider);
-        } catch (error) {
-          console.error("Error signing in:", error);
-          alert("Sign-in failed: " + error.message);
+        } catch (err) {
+          alert("Sign-in failed: " + err.message);
         }
       };
     }
   });
+
+  // ✅ This function is used by forms before saving data
+  window.showLoginPopup = function () {
+    const popup = document.getElementById("loginPopup");
+    popup.classList.remove("hidden");
+  };
+
+  // Handle popup buttons
+  const popupLoginBtn = document.getElementById("popupLoginBtn");
+  const popupCloseBtn = document.getElementById("popupCloseBtn");
+
+  if (popupLoginBtn) {
+    popupLoginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithPopup(auth, provider);
+        document.getElementById("loginPopup").classList.add("hidden");
+      } catch (err) {
+        alert("Sign-in failed: " + err.message);
+      }
+    });
+  }
+
+  if (popupCloseBtn) {
+    popupCloseBtn.addEventListener("click", () => {
+      document.getElementById("loginPopup").classList.add("hidden");
+    });
+  }
+</script>
+
+
+<!-- Sign-in required popup -->
+<div id="loginPopup" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
+  <div class="bg-white dark:bg-slate-800 rounded-xl p-6 text-center shadow-xl">
+    <p class="text-lg mb-4 text-slate-700 dark:text-slate-200">
+      Please sign in to add or edit your data.
+    </p>
+    <button id="popupLoginBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+      Sign in with Google
+    </button>
+    <div class="mt-4">
+      <button id="popupCloseBtn" class="text-sm text-slate-500 hover:text-slate-700">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+// Popup logic for "Please sign in first" message
+function showLoginPopup() {
+  const popup = document.getElementById('loginPopup');
+  popup.classList.remove('hidden');
+}
+
+const popupLoginBtn = document.getElementById('popupLoginBtn');
+const popupCloseBtn = document.getElementById('popupCloseBtn');
+
+if (popupLoginBtn) {
+  popupLoginBtn.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, new GoogleAuthProvider());
+      document.getElementById('loginPopup').classList.add('hidden');
+    } catch (err) {
+      alert("Sign-in failed: " + err.message);
+    }
+  });
+}
+
+if (popupCloseBtn) {
+  popupCloseBtn.addEventListener('click', () => {
+    document.getElementById('loginPopup').classList.add('hidden');
+  });
+}
 </script>
 
 
