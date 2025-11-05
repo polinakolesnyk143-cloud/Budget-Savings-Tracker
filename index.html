@@ -860,77 +860,6 @@ render = function() {
 
 
 </script>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } 
-    from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBj5JC2OUp2QVswlTDEkpBXCDPcywXZdxk",
-    authDomain: "budget-and-savings-tracker.firebaseapp.com",
-    projectId: "budget-and-savings-tracker",
-    storageBucket: "budget-and-savings-tracker.firebasestorage.app",
-    messagingSenderId: "52076852008",
-    appId: "1:52076852008:web:117a7b3071c46a677c561d",
-    measurementId: "G-N8DL03R0H1"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  window.auth = getAuth(app); // make it global
-  const provider = new GoogleAuthProvider();
-
-  const sidebarLoginBtn = document.getElementById("signupBtn");
-
-  // 🔁 Auth state: just update the sidebar button
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      sidebarLoginBtn.textContent = `Sign out (${user.displayName || user.email})`;
-      sidebarLoginBtn.onclick = async () => {
-        await signOut(auth);
-        sidebarLoginBtn.textContent = "Sign in with Google";
-        localStorage.clear();
-      };
-    } else {
-      sidebarLoginBtn.textContent = "Sign in with Google";
-      sidebarLoginBtn.onclick = async () => {
-        try {
-          await signInWithPopup(auth, provider);
-        } catch (err) {
-          alert("Sign-in failed: " + err.message);
-        }
-      };
-    }
-  });
-
-  // ✅ This function is used by forms before saving data
-  window.showLoginPopup = function () {
-    const popup = document.getElementById("loginPopup");
-    popup.classList.remove("hidden");
-  };
-
-  // Handle popup buttons
-  const popupLoginBtn = document.getElementById("popupLoginBtn");
-  const popupCloseBtn = document.getElementById("popupCloseBtn");
-
-  if (popupLoginBtn) {
-    popupLoginBtn.addEventListener("click", async () => {
-      try {
-        await signInWithPopup(auth, provider);
-        document.getElementById("loginPopup").classList.add("hidden");
-      } catch (err) {
-        alert("Sign-in failed: " + err.message);
-      }
-    });
-  }
-
-  if (popupCloseBtn) {
-    popupCloseBtn.addEventListener("click", () => {
-      document.getElementById("loginPopup").classList.add("hidden");
-    });
-  }
-</script>
 
 
 <!-- Sign-in required popup -->
@@ -949,6 +878,7 @@ render = function() {
     </div>
   </div>
 </div>
+
 <script>
 // Popup logic for "Please sign in first" message
 function showLoginPopup() {
