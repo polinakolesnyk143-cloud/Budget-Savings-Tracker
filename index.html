@@ -25,6 +25,7 @@
     /* Невеликі CSS-доповнення */
     .glass { background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)); backdrop-filter: blur(6px); }
   </style>
+  
 </head>
 <body class="antialiased bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
   <div class="min-h-screen p-6 max-w-6xl mx-auto">
@@ -748,7 +749,55 @@ render = function() {
 };
 
 
+</script><script type="module">
+  // ✅ Import Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
+
+  // ✅ Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBj5JC2OUp2QVswlTDEkpBXCDPcywXZdxk",
+    authDomain: "budget-and-savings-tracker.firebaseapp.com",
+    projectId: "budget-and-savings-tracker",
+    storageBucket: "budget-and-savings-tracker.firebasestorage.app",
+    messagingSenderId: "52076852008",
+    appId: "1:52076852008:web:117a7b3071c46a677c561d",
+    measurementId: "G-N8DL03R0H1"
+  };
+
+  // ✅ Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  // ✅ Reference your sidebar button
+  const loginBtn = document.getElementById("signupBtn");
+
+  // ✅ Listen for auth state changes (user login/logout)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginBtn.textContent = `Sign out (${user.displayName || user.email})`;
+      loginBtn.onclick = async () => {
+        await signOut(auth);
+        console.log("Signed out");
+      };
+      console.log("Signed in as:", user);
+    } else {
+      loginBtn.textContent = "Sign in with Google";
+      loginBtn.onclick = async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Error signing in:", error);
+          alert("Sign-in failed: " + error.message);
+        }
+      };
+    }
+  });
 </script>
+
 
 </body>
 </html>
