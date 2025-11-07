@@ -805,9 +805,16 @@ render = function() {
     }
   });
 </script>
+<script>
+  document.getElementById('upgradeBtn').addEventListener('click', function() {
+    // ✅ This opens your Stripe checkout in a new tab
+    window.open('https://buy.stripe.com/4gM8wIc5a0Ss6m1chLcZa00', '_blank', 'noopener');
+  });
+</script>
 
 
 </body>
 </html>
+
 
 
