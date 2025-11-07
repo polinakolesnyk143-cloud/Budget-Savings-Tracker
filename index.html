@@ -28,84 +28,6 @@
   
 </head>
 <body class="antialiased bg-white text-slate-800 dark:bg-slate-900 dark:text-slate-100">
-<!-- 👇 FIREBASE LOGIN SYSTEM (must be at the top of body) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
-
-  // ✅ Your Firebase project config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBj5JC2OUp2QVswlTDEkpBXCDPcywXZdxk",
-    authDomain: "budget-and-savings-tracker.firebaseapp.com",
-    projectId: "budget-and-savings-tracker",
-    storageBucket: "budget-and-savings-tracker.firebasestorage.app",
-    messagingSenderId: "52076852008",
-    appId: "1:52076852008:web:117a7b3071c46a677c561d",
-    measurementId: "G-N8DL03R0H1"
-  };
-
-  // ✅ Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  window.auth = getAuth(app);
-  const provider = new GoogleAuthProvider();
-
-  // ✅ Track login status globally
-  window.currentUser = null;
-
-  // 👀 Watch for sign in/out changes
-  onAuthStateChanged(auth, (user) => {
-    window.currentUser = user;
-    const sidebarLoginBtn = document.getElementById("signupBtn");
-
-    if (user) {
-      sidebarLoginBtn.textContent = `Sign out (${user.displayName || user.email})`;
-      sidebarLoginBtn.onclick = async () => {
-        await signOut(auth);
-        window.currentUser = null;
-      };
-    } else {
-      sidebarLoginBtn.textContent = "Sign in with Google";
-      sidebarLoginBtn.onclick = async () => {
-        try {
-          await signInWithPopup(auth, provider);
-        } catch (err) {
-          alert("Sign-in failed: " + err.message);
-        }
-      };
-    }
-  });
-
-  // ✅ Define popup helper (used by forms)
-  window.showLoginPopup = function () {
-    document.getElementById("loginPopup").classList.remove("hidden");
-  };
-
-  // ✅ Popup buttons
-  document.addEventListener("DOMContentLoaded", () => {
-    const popupLoginBtn = document.getElementById("popupLoginBtn");
-    const popupCloseBtn = document.getElementById("popupCloseBtn");
-
-    if (popupLoginBtn) {
-      popupLoginBtn.addEventListener("click", async () => {
-        try {
-          await signInWithPopup(auth, provider);
-          document.getElementById("loginPopup").classList.add("hidden");
-        } catch (err) {
-          alert("Sign-in failed: " + err.message);
-        }
-      });
-    }
-
-    if (popupCloseBtn) {
-      popupCloseBtn.addEventListener("click", () => {
-        document.getElementById("loginPopup").classList.add("hidden");
-      });
-    }
-  });
-</script>
-<!-- 👆 END FIREBASE LOGIN SYSTEM -->
-
   <div class="min-h-screen p-6 max-w-6xl mx-auto">
     <!-- Header -->
     <header class="flex items-center justify-between gap-4 mb-6">
@@ -126,7 +48,14 @@
         <!-- Theme toggle -->
         <button id="themeToggle" data-i18n="theme" class="px-3 py-2 rounded-md glass hover:scale-105 transition">Theme</button>
         <button id="exportCsv" data-i18n="exportCSV" class="px-3 py-2 rounded-md bg-primary text-white hover:opacity-90">Експорт CSV</button>
-        <button id="upgradeBtn" data-i18n="upgrade" class="px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700">Upgrade to Pro</button>
+        <a href="https://buy.stripe.com/4gM8wIc5a0Ss6m1chLcZa00"
+   id="upgradeBtn"
+   target="_blank"
+   data-i18n="upgrade"
+   class="px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 hover:bg-primary hover:text-white transition">
+  Upgrade to Pro 💳
+</a>
+
 		<button id="menuToggle" class="p-2 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
   <!-- Іконка бургер-меню -->
   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -484,18 +413,6 @@ const translations = {
   // Form submit with localized alerts
   txForm.addEventListener('submit', (e) => {
     e.preventDefault();
-	  // 🔒 Stop if user not logged in
-  if (!window.currentUser) {
-    showLoginPopup();
-    return;
-  }
-
-	// 🔒 Stop if user not logged in
-if (!auth.currentUser) {
-  showLoginPopup();
-  return;
-}
-
 
     const incomeAmount = parseFloat(document.getElementById('txIncome').value) || 0;
     const expenseAmount = parseFloat(document.getElementById('txExpense').value) || 0;
@@ -703,16 +620,6 @@ function saveCategories() {
 
 addCategoryForm.addEventListener('submit', (e) => {
   e.preventDefault();
-    if (!window.currentUser) {
-    showLoginPopup();
-    return;
-  }
-
-  if (!auth.currentUser) {
-  showLoginPopup();
-  return;
-}
-
   const name = document.getElementById('catName').value.trim();
   const amount = parseFloat(document.getElementById('catAmount').value) || 0;
   if (!name || amount <= 0) return alert('Enter valid category and amount');
@@ -802,16 +709,6 @@ function saveGoals() {
 if (addGoalForm) {
   addGoalForm.addEventListener('submit', (e) => {
     e.preventDefault();
-	  if (!window.currentUser) {
-    showLoginPopup();
-    return;
-  }
-
-	if (!auth.currentUser) {
-  showLoginPopup();
-  return;
-}
-
     const name = document.getElementById('newGoalName').value.trim();
     const amount = parseFloat(document.getElementById('newGoalAmount').value) || 0;
     if (!name || amount <= 0) return alert('Enter valid goal name and amount');
@@ -846,7 +743,6 @@ function renderGoals() {
       <div class="w-full bg-slate-200 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
         <div class="h-3 rounded-full bg-gradient-to-r from-primary to-accent" style="width:${percent}%;"></div>
       </div>
-      <div class="flex items-center gap-2 text-sm text-slate-400 mt-1"><span>${percent}%</span></div>`;
     goalsContainer.appendChild(card);
   });
 }
@@ -858,53 +754,68 @@ render = function() {
   renderGoals();
 };
 
+// ✅ Stripe "Upgrade to Pro" button
+const upgradeBtn = document.getElementById("upgradeBtn");
+if (upgradeBtn) {
+  upgradeBtn.addEventListener("click", () => {
+    window.open("https://buy.stripe.com/4gM8wIc5a0Ss6m1chLcZa00", "_blank");
+  });
+}
 
 </script>
+<script type="module">
+  // ✅ Import Firebase SDKs
+
+  // ✅ Import Firebase SDKs
 
 
-<!-- Sign-in required popup -->
-<div id="loginPopup" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center">
-  <div class="bg-white dark:bg-slate-800 rounded-xl p-6 text-center shadow-xl">
-    <p class="text-lg mb-4 text-slate-700 dark:text-slate-200">
-      Please sign in to add or edit your data.
-    </p>
-    <button id="popupLoginBtn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
-      Sign in with Google
-    </button>
-    <div class="mt-4">
-      <button id="popupCloseBtn" class="text-sm text-slate-500 hover:text-slate-700">
-        Cancel
-      </button>
-    </div>
-  </div>
-</div>
+</script><script type="module">
+  // ✅ Import Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-auth.js";
 
-<script>
-// Popup logic for "Please sign in first" message
-function showLoginPopup() {
-  const popup = document.getElementById('loginPopup');
-  popup.classList.remove('hidden');
-}
+  // ✅ Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBj5JC2OUp2QVswlTDEkpBXCDPcywXZdxk",
+    authDomain: "budget-and-savings-tracker.firebaseapp.com",
+    projectId: "budget-and-savings-tracker",
+    storageBucket: "budget-and-savings-tracker.firebasestorage.app",
+    messagingSenderId: "52076852008",
+    appId: "1:52076852008:web:117a7b3071c46a677c561d",
+    measurementId: "G-N8DL03R0H1"
+  };
 
-const popupLoginBtn = document.getElementById('popupLoginBtn');
-const popupCloseBtn = document.getElementById('popupCloseBtn');
+  // ✅ Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
 
-if (popupLoginBtn) {
-  popupLoginBtn.addEventListener('click', async () => {
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      document.getElementById('loginPopup').classList.add('hidden');
-    } catch (err) {
-      alert("Sign-in failed: " + err.message);
+  // ✅ Reference your sidebar button
+  const loginBtn = document.getElementById("signupBtn");
+
+  // ✅ Listen for auth state changes (user login/logout)
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginBtn.textContent = `Sign out (${user.displayName || user.email})`;
+      loginBtn.onclick = async () => {
+        await signOut(auth);
+        console.log("Signed out");
+      };
+      console.log("Signed in as:", user);
+    } else {
+      loginBtn.textContent = "Sign in with Google";
+      loginBtn.onclick = async () => {
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Error signing in:", error);
+          alert("Sign-in failed: " + error.message);
+        }
+      };
     }
   });
-}
-
-if (popupCloseBtn) {
-  popupCloseBtn.addEventListener('click', () => {
-    document.getElementById('loginPopup').classList.add('hidden');
-  });
-}
 </script>
 
 
